@@ -21,7 +21,22 @@ class myprotocol(LineReceiver):
 		elif self.status=='Login Succeed':
 			self.handle_others(line)
 	def handle_others(self,cmd):
-		print cmd
+		name,content=self.splitcmd(cmd)
+		print 'name:',name,'cont:',content
+		content='%s To %s said:%s\n'%(self.name,name,content)
+		if name=='All Users':
+			for n,l in self.users.items():
+				if n!=name:
+					
+					l.sendLine(content)
+		else:
+			for n,l in self.users.items():
+				if n==name:
+					l.sendLine(content)
+					break
+				
+	def splitcmd(self,cmd):
+		return cmd.split(':')
 
 
 	def handle_login(self,line):
@@ -42,7 +57,8 @@ class myprotocol(LineReceiver):
 				self.sendLine('wrong username or password')
 				return False
 		self.name=name
-		self.sendLine('login succeed')
+		self.users[name]=self
+		self.sendLine('login succeed:{0}'.format(self.name))
 		return True
 	def splitinput(self,line):
 		name,passwd=line.strip().split()

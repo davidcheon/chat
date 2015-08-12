@@ -1,23 +1,24 @@
 #!/usr/bin/python
 #!_*_ coding:utf-8 _*_
-from twisted.internet import wxreactor
-wxreactor.install()
+#from twisted.internet import wxreactor
+#wxreactor.install()
 from twisted.internet import reactor,protocol
 from twisted.protocols.basic import LineReceiver
 import wx
 import threading
 
 class chatgui(object):
-	def __init__(self,app,prot):
+	def __init__(self,app,prot,name):
 		self.protocol=prot
 		self.app=app
-		self.frame=wx.Frame(None,title='chat',size=(400,400))
+		self.name=name
+		self.frame=wx.Frame(None,title='chat:%s'%self.name,size=(400,400))
 		self.frame.SetMinSize((400,400))
 		self.frame.SetMaxSize((400,400))
 		self.bkg=wx.Panel(self.frame)
 		self.chatcontent=wx.TextCtrl(self.bkg,style=wx.TE_MULTILINE | wx.VSCROLL |wx.HSCROLL)
 		self.inputcontent=wx.TextCtrl(self.bkg,style=wx.TE_MULTILINE |wx.HSCROLL)
-		self.userlist=wx.ListBox(self.bkg,26,wx.DefaultPosition,(150,400),['All Users','a','b','c','d','e','f','g','h','i'],wx.LB_SINGLE)
+		self.userlist=wx.ListBox(self.bkg,26,wx.DefaultPosition,(150,400),['All Users','dane','daisongchen'],wx.LB_SINGLE)
 		self.userlist.SetSelection(0)
 		self.userlist.Bind(wx.EVT_LISTBOX, self.OnSelect)
 		self.sendbutton=wx.Button(self.bkg,label='send')
@@ -41,7 +42,10 @@ class chatgui(object):
 	def chatshow(self):
 		self.frame.Show()
 	def sendmessage(self,evt):
-		pass
+		content=str(self.inputcontent.GetValue())
+		to=str(self.touser.GetLabel())	
+		to=to[to.find(' ')+1:len(to)-1]
+		self.protocol.sendLine("{0}:{1}".format(to,content))
 		
 class myprotocol(LineReceiver):
 	def __init__(self,gui):
@@ -51,7 +55,7 @@ class myprotocol(LineReceiver):
 		print 'lost:'+reason.getErrorMessage()
 		reactor.stop()
 	def lineReceived(self,line):
-		self.content.AppendText(line+'\n')
+		self.content.AppendText(line)
 
 class myfactory(protocol.ClientFactory):
 	def __init__(self,gui):

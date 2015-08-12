@@ -1,13 +1,10 @@
 #!/usr/bin/python
 #!_*_ coding:utf-8 _*_
 import wx
-import client
-import threading
-from twisted.internet import protocol,reactor
 class mylogingui(object):
-	def __init__(self,proc):
+	def __init__(self,app,proc=None):
 		self.protocol=proc
-		self.app=wx.App()
+		self.app=app
 		self.frame=wx.Frame(None,title='login',size=(400,200))
 		self.frame.SetMinSize((400,200))
 		self.frame.SetMaxSize((400,200))
@@ -39,7 +36,8 @@ class mylogingui(object):
 		self.vbox.Add(self.hbox4,proportion=0,border=5)
 		self.bkg.SetSizer(self.vbox)
 		
-	
+	def setprotocol(self,prot):
+		self.protocol=prot
 	def loginaction(self,evt):
 		username=self.username.GetValue().strip()
 		password=self.password.GetValue().strip()
@@ -53,9 +51,8 @@ class mylogingui(object):
 		self.frame.Show()
 	def logindestroy(self):
 		self.frame.Destroy()
-#		wx.GetApp().ExitMainLoop()
 		
 if __name__=='__main__':
-	mygui=mylogingui()
+	mygui=mylogingui(None)
 	mygui.loginshow()
 		
