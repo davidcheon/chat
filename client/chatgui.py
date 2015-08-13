@@ -6,7 +6,7 @@ from twisted.internet import reactor,protocol
 from twisted.protocols.basic import LineReceiver
 import wx
 import threading
-
+import time
 class chatgui(object):
 	def __init__(self,app,prot,name):
 		self.protocol=prot
@@ -18,7 +18,7 @@ class chatgui(object):
 		self.bkg=wx.Panel(self.frame)
 		self.chatcontent=wx.TextCtrl(self.bkg,style=wx.TE_MULTILINE | wx.VSCROLL |wx.HSCROLL)
 		self.inputcontent=wx.TextCtrl(self.bkg,style=wx.TE_MULTILINE |wx.HSCROLL)
-		self.userlist=wx.ListBox(self.bkg,26,wx.DefaultPosition,(150,400),['All Users','dane','daisongchen'],wx.LB_SINGLE)
+		self.userlist=wx.ListBox(self.bkg,26,wx.DefaultPosition,(150,400),['All Users'],wx.LB_SINGLE)
 		self.userlist.SetSelection(0)
 		self.userlist.Bind(wx.EVT_LISTBOX, self.OnSelect)
 		self.sendbutton=wx.Button(self.bkg,label='send')
@@ -35,6 +35,9 @@ class chatgui(object):
 		self.hbox2.Add(self.vbox1,proportion=2,flag=wx.EXPAND|wx.ALL,border=5)
 		self.hbox2.Add(self.userlist,proportion=1,flag=wx.RIGHT,border=10)
 		self.bkg.SetSizer(self.hbox2)
+		self.mythr=mythread(self.protocol,self.userlist)
+		self.mythr.setDaemon(1)
+		self.mythr.start()
 	def OnSelect(self,evt):
 		index=evt.GetSelection()
 		value=self.userlist.GetString(index)
@@ -46,26 +49,39 @@ class chatgui(object):
 		to=str(self.touser.GetLabel())	
 		to=to[to.find(' ')+1:len(to)-1]
 		self.protocol.sendLine("{0}:{1}".format(to,content))
-		
-class myprotocol(LineReceiver):
-	def __init__(self,gui):
-		self.gui=gui
-		self.content=self.gui.chatcontent
-	def connectionLost(self,reason):
-		print 'lost:'+reason.getErrorMessage()
-		reactor.stop()
-	def lineReceived(self,line):
-		self.content.AppendText(line)
+class mythread(threading.Thread):
+	def __init__(self,proc,userlist):
+		threading.Thread.__init__(self)
+		self.status=True
+		self.proc=proc
+		self.userlist=userlist
+	def run(self):	
+		while self.status:
+			userl='--'.join(self.userlist.GetStrings())
+			self.proc.sendLine('UserList:{0}'.format(userl))
+			time.sleep(2)
+	def setstatus(self,s):
+		self.status=s
+#class myprotocol(LineReceiver):
+#	def __init__(self,gui):
+#		self.gui=gui
+#		self.content=self.gui.chatcontent
+#	def connectionLost(self,reason):
+#		print 'lost!!:'+reason.getErrorMessage()
+#		self.gui.mythr.setstatus(False)
+#		reactor.stop()
+#	def lineReceived(self,line):
+#		self.content.AppendText(line)
 
-class myfactory(protocol.ClientFactory):
-	def __init__(self,gui):
-		self.gui=gui
-	def buildProtocol(self,addr):
-		return myprotocol(self.gui)
+#class myfactory(protocol.ClientFactory):
+#	def __init__(self,gui):
+#		self.gui=gui
+#	def buildProtocol(self,addr):
+#		return myprotocol(self.gui)
 		
 if __name__=='__main__':
 	app=wx.App(False)
-	chat=chatgui(app,None)
+	chat=chatgui(app,None,None)
 	chat.chatshow()
 	reactor.registerWxApp(app)
 	reactor.connectTCP('127.0.0.1',12345,myfactory(chat))

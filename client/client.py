@@ -8,12 +8,14 @@ from twisted.protocols.basic import LineReceiver
 import threading
 import time
 import wx
+from ConfigParser import ConfigParser
+import commands
 class myprotocol(LineReceiver):
 	def __init__(self):
 		self.gui=None
 		self.status=None
 	def connectionLost(self,reason):
-		print 'lost:'+reason.getErrorMessage()
+		print 'connection lost:'+reason.getErrorMessage()
 	def lineReceived(self,line):
 		self.gui.setprotocol(self)
 		if self.status!='start chat':
@@ -25,8 +27,17 @@ class myprotocol(LineReceiver):
 			else:
 				self.gui.status.SetLabel(line)
 		else:
-			self.chat.chatcontent.AppendText(line+'\n')
-		
+			if not line.startswith('UserList:'):
+				self.chat.chatcontent.AppendText(line+'\n')
+			else:
+				line=line[len('UserList:'):]
+				users=line.split(':')
+				#print users
+				#self.chat.userlist.Clear()
+				#self.chat.userlist.Append('All Users')
+				
+				for u in users:
+					self.chat.userlist.Append(u)	
 	def connectionMade(self):
 		self.gui=self.factory.gui
 class myfactory(protocol.ClientFactory):
@@ -39,7 +50,14 @@ class myfactory(protocol.ClientFactory):
 		reactor.stop()
 	def clientConnectionLost(self,transport,reason):
 		reactor.stop
+def getipaddress():
+	return commands.getoutput("ifconfig wlan0|grep -i 'inet '|awk '{print $2}'|awk -F':' '{print $2}'")
 if __name__=='__main__':
+	CONFIGFILE='../config.txt'
+	config=ConfigParser()
+	config.read(CONFIGFILE)
+	ip=config.get('options','ip') if config.get('options','ip')!='' else getipaddress()
+	port=config.getint('options','port')
 	app=wx.App(False)
 	
 	mygui=mylogingui.mylogingui(app)
@@ -49,7 +67,7 @@ if __name__=='__main__':
 	
 	mygui.loginshow()
 	
-	reactor.connectTCP('192.168.0.15',12345,myfac)
+	reactor.connectTCP(ip,port,myfac)
 	
 	reactor.run()
 	

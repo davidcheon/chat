@@ -4,14 +4,15 @@ from twisted.internet import protocol,reactor
 from twisted.protocols.basic import LineReceiver
 import hashlib
 import sqlite3
+from ConfigParser import ConfigParser
 class myprotocol(LineReceiver):
 	def __init__(self,users):
 		self.users=users
 		self.name=None
 		self.status='GET Name'
+		
 		self.conn=sqlite3.connect('my.db')
 		self.curs=self.conn.cursor()
-		self.md5=hashlib.md5()
 	def connectionMade(self):
 		self.sendLine('welcome to chat system')
 	def lineReceived(self,line):
@@ -21,19 +22,32 @@ class myprotocol(LineReceiver):
 		elif self.status=='Login Succeed':
 			self.handle_others(line)
 	def handle_others(self,cmd):
-		name,content=self.splitcmd(cmd)
-		print 'name:',name,'cont:',content
-		content='%s To %s said:%s\n'%(self.name,name,content)
+		name,contentorig=self.splitcmd(cmd)
+		content='%s To %s said:%s\n'%(self.name,name,contentorig)
 		if name=='All Users':
 			for n,l in self.users.items():
-				if n!=name:
+				if  n!='All Users':
 					
 					l.sendLine(content)
+		elif name=='UserList':
+			ld=None
+			clientusers=set(contentorig.split('--'))
+			serverusers=set(self.users.keys())
+			ls=list(serverusers-clientusers)
+			if ls!=[]:
+				for n,l in self.users.items():
+					if n==self.name:
+						ld=l
+						break
+				ul=':'.join(ls)
+				ld.sendLine('UserList:%s'%ul)
 		else:
 			for n,l in self.users.items():
+				print n,self.name,name
+				if n==self.name:
+					l.sendLine(content)
 				if n==name:
 					l.sendLine(content)
-					break
 				
 	def splitcmd(self,cmd):
 		return cmd.split(':')
@@ -48,6 +62,7 @@ class myprotocol(LineReceiver):
 			self.sendLine('no have username:%s'%name)
 			return False
 		else:
+			self.md5=hashlib.md5()
 			self.md5.update(passwd.strip())
 			passwd=self.md5.hexdigest()
 			query='select * from users where username = "%s" and password = "%s"' %(name,passwd)
@@ -66,13 +81,19 @@ class myprotocol(LineReceiver):
 	def connectionLost(self,reason):
 		self.curs.close()
 		self.conn.close()
+		if self.users.has_key(self.name):
+			self.users.pop(self.name)
 		print 'connection lost:'+reason.getErrorMessage()
 class myfactory(protocol.Factory):
 	def __init__(self):
-		self.users={}
+		self.users={'All Users':None}
 	def buildProtocol(self,addr):
 		return myprotocol(self.users)
 if __name__=='__main__':
+	CONFIGFILE='../config.txt'
+	config=ConfigParser()
+	config.read(CONFIGFILE)
+	port=config.getint('options','port')
 	myf=myfactory()
-	reactor.listenTCP(12345,myf)
+	reactor.listenTCP(port,myf)
 	reactor.run()
