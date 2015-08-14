@@ -1,6 +1,7 @@
 #!/usr/bin/python
 #!_*_ coding:utf-8 _*_
 import wx
+import registergui
 class mylogingui(object):
 	def __init__(self,app,proc=None):
 		self.protocol=proc
@@ -46,7 +47,9 @@ class mylogingui(object):
 	def senddata(self,cmd):
 		self.protocol.sendLine(cmd)
 	def registeraction(self,evt):
-		pass
+		register=registergui.myregister(self.app,self.protocol)
+		self.logindestroy()
+		register.Show()
 	def loginshow(self):
 		self.frame.Show()
 	def logindestroy(self):

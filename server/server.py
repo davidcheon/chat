@@ -41,6 +41,12 @@ class myprotocol(LineReceiver):
 						break
 				ul=':'.join(ls)
 				ld.sendLine('UserList:%s'%ul)
+		elif name=='Register':
+			username,password=contentorig.split('--')
+			if self.users.has_key(username):
+				pass
+			else:
+				pass
 		else:
 			for n,l in self.users.items():
 				print n,self.name,name

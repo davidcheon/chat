@@ -10,6 +10,7 @@ import time
 import wx
 from ConfigParser import ConfigParser
 import commands
+import myregister
 class myprotocol(LineReceiver):
 	def __init__(self):
 		self.gui=None
@@ -40,9 +41,11 @@ class myprotocol(LineReceiver):
 					self.chat.userlist.Append(u)	
 	def connectionMade(self):
 		self.gui=self.factory.gui
+		self.reg=self.factory.reg
 class myfactory(protocol.ClientFactory):
-	def __init__(self,gui):
+	def __init__(self,gui,reg):
 		self.gui=gui
+		self.reg=reg
 		self.protocol=myprotocol
 #	def buildProtocol(self,addr):
 #		return myprotocol()
@@ -61,7 +64,8 @@ if __name__=='__main__':
 	app=wx.App(False)
 	
 	mygui=mylogingui.mylogingui(app)
-	myfac=myfactory(mygui)
+	myreg=myregister.myregister(app)
+	myfac=myfactory(mygui,myreg)
 	
 	reactor.registerWxApp(app)
 	
