@@ -61,9 +61,9 @@ class myregister(wx.Frame):
 		self.status.SetLabel('exit')
 	def registerdestroy(self):
 		self.Destroy()
-if __name__=='__main__':
-	app=wx.App()
-	myf=myregister(None,None)
-	myf.Show()
-	app.MainLoop()
+#if __name__=='__main__':
+#	app=wx.App()
+#	myf=myregister(None,None)
+#	myf.Show()
+#	app.MainLoop()
 	

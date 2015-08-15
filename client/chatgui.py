@@ -70,11 +70,11 @@ class mythread(threading.Thread):
 	def setstatus(self,s):
 		self.status=s
 		
-if __name__=='__main__':
-	app=wx.App(False)
-	chat=chatgui(app,None,None)
-	chat.chatshow()
-	reactor.registerWxApp(app)
-	reactor.connectTCP('127.0.0.1',12345,myfactory(chat))
-	reactor.run()
+#if __name__=='__main__':
+#	app=wx.App(False)
+#	chat=chatgui(app,None,None)
+#	chat.chatshow()
+#	reactor.registerWxApp(app)
+#	reactor.connectTCP('127.0.0.1',12345,myfactory(chat))
+#	reactor.run()
 	

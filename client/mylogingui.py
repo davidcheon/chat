@@ -58,7 +58,7 @@ class mylogingui(object):
 	def logindestroy(self):
 		self.frame.Destroy()
 		
-if __name__=='__main__':
-	mygui=mylogingui(None)
-	mygui.loginshow()
+#if __name__=='__main__':
+#	mygui=mylogingui(None)
+#	mygui.loginshow()
 		
