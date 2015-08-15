@@ -55,7 +55,10 @@ class chatgui(object):
 		if self.name!=to:
 			self.protocol.sendLine("{0}:{1}".format(to,content))
 		else:
-			wx.MessageBox('can not chat with yourself','Message',style=wx.OK)
+#			wx.MessageBox('can not chat with yourself',caption='Message',style=wx.OK)
+			dlg=wx.MessageDialog(self.bkg,'Can not chat with yourself',caption='Message',style=wx.OK)
+			dlg.ShowModal()
+			dlg.Destroy()
 class mythread(threading.Thread):
 	def __init__(self,proc,userlist):
 		threading.Thread.__init__(self)

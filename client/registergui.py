@@ -45,7 +45,6 @@ class myregister(wx.Frame):
 		password=self.password.GetValue().strip()
 		repassword=self.repassword.GetValue().strip()
 		username=self.username.GetValue()
-		print username,password,repassword
 		if username !='' and password!='' and repassword !='':
 			if password!=repassword:
 				self.status.SetLabel('password must be same with repassword')
