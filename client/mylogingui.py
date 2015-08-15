@@ -36,20 +36,23 @@ class mylogingui(object):
 		self.vbox.Add(self.hbox3,proportion=0,border=5)
 		self.vbox.Add(self.hbox4,proportion=0,border=5)
 		self.bkg.SetSizer(self.vbox)
-		
+		self.register=registergui.myregister(self.app,self.protocol)
 	def setprotocol(self,prot):
 		self.protocol=prot
 	def loginaction(self,evt):
 		username=self.username.GetValue().strip()
 		password=self.password.GetValue().strip()
-		cmd='{0} {1}'.format(username,password)
-		self.protocol.sendLine(cmd)
+		if username!='' and password!='':
+			cmd='{0} {1}'.format(username,password)
+			self.protocol.sendLine(cmd)
+		else:
+			self.status.SetLabel('username or password must be filled')
 	def senddata(self,cmd):
 		self.protocol.sendLine(cmd)
 	def registeraction(self,evt):
-		register=registergui.myregister(self.app,self.protocol)
+		
 		self.logindestroy()
-		register.Show()
+		self.register.Show()
 	def loginshow(self):
 		self.frame.Show()
 	def logindestroy(self):

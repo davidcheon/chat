@@ -17,10 +17,36 @@ class myprotocol(LineReceiver):
 		self.sendLine('welcome to chat system')
 	def lineReceived(self,line):
 		if self.status =='GET Name':
-			if self.handle_login(line):
-				self.status='Login Succeed'
+			if line.startswith('Register:'):
+				if self.handle_register(line):
+					self.status='Register Succeed'
+			else:
+				if self.handle_login(line):
+					self.status='Login Succeed'
 		elif self.status=='Login Succeed':
 			self.handle_others(line)
+		elif self.status=='Register Succeed':
+			self.handle_others(line)
+	def handle_register(self,line):
+		action,contentorig=self.splitcmd(line)
+		name,password=contentorig.split('--')
+		search='select * from users where username="%s"'%name
+		resu=self.curs.execute(search).fetchall()
+		if resu==[]:
+			self.md5=hashlib.md5()
+			self.md5.update(password)
+			cmd='insert into users(username,password) values("%s","%s")'%(name,self.md5.hexdigest())
+			self.curs.execute(cmd)
+			self.conn.commit()
+			
+			self.name=name
+			self.users[name]=self
+			self.sendLine('Register succeed:{0}'.format(name))
+			return True
+		else:
+			self.sendLine('Register Error:%s already registered,try another name'%name)
+			return False
+			
 	def handle_others(self,cmd):
 		name,contentorig=self.splitcmd(cmd)
 		content='%s To %s said:%s\n'%(self.name,name,contentorig)
@@ -41,12 +67,7 @@ class myprotocol(LineReceiver):
 						break
 				ul=':'.join(ls)
 				ld.sendLine('UserList:%s'%ul)
-		elif name=='Register':
-			username,password=contentorig.split('--')
-			if self.users.has_key(username):
-				pass
-			else:
-				pass
+		
 		else:
 			for n,l in self.users.items():
 				print n,self.name,name

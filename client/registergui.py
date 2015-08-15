@@ -5,7 +5,7 @@ import sys
 class myregister(wx.Frame):
 	def __init__(self,parent,prot=None):
 		wx.Frame.__init__(self,None,title='register')
-		self.SetSizeHintsSz((400,200),(400,200))
+		self.SetSizeHintsSz((430,200),(430,200))
 		self.protocol=prot
 		self.app=parent
 		panel=wx.Panel(self)
@@ -39,16 +39,18 @@ class myregister(wx.Frame):
 		vbox1.Add(hbox4,proportion=1,border=5)
 		vbox1.Add(self.status,proportion=1,border=5)
 		panel.SetSizer(vbox1)
+	def setprotocol(self,prot):
+		self.protocol=prot
 	def okaction(self,evt):
 		password=self.password.GetValue().strip()
 		repassword=self.repassword.GetValue().strip()
 		username=self.username.GetValue()
+		print username,password,repassword
 		if username !='' and password!='' and repassword !='':
 			if password!=repassword:
 				self.status.SetLabel('password must be same with repassword')
 			else:
-				self.status.SetLabel('yse')
-				content='Register:{0}--{1}'.format(self.username,self.password)
+				content='Register:{0}--{1}'.format(username,password)
 				self.protocol.sendLine(content)
 
 
@@ -56,7 +58,9 @@ class myregister(wx.Frame):
 		else:
 			self.status.SetLabel('must fill the information')
 	def exitaction(self,evt):
-		pass
+		self.status.SetLabel('exit')
+	def registerdestroy(self):
+		self.Destroy()
 if __name__=='__main__':
 	app=wx.App()
 	myf=myregister(None,None)

@@ -15,6 +15,7 @@ class chatgui(object):
 		self.frame=wx.Frame(None,title='chat:%s'%self.name,size=(400,400))
 		self.frame.SetMinSize((400,400))
 		self.frame.SetMaxSize((400,400))
+		self.frame.Bind(wx.EVT_CLOSE,self.testclose)
 		self.bkg=wx.Panel(self.frame)
 		self.chatcontent=wx.TextCtrl(self.bkg,style=wx.TE_MULTILINE | wx.VSCROLL |wx.HSCROLL)
 		self.inputcontent=wx.TextCtrl(self.bkg,style=wx.TE_MULTILINE |wx.HSCROLL)
@@ -22,7 +23,7 @@ class chatgui(object):
 		self.userlist.SetSelection(0)
 		self.userlist.Bind(wx.EVT_LISTBOX, self.OnSelect)
 		self.sendbutton=wx.Button(self.bkg,label='send')
-		self.sendbutton.Bind(wx.EVT_BUTTON,self.sendmessage)
+		self.sendbutton.Bind(wx.EVT_BUTTON,self.testclose)
 		self.touser=wx.StaticText(self.bkg,label='To All Users:')
 		self.hbox1=wx.BoxSizer()
 		self.hbox1.Add(self.inputcontent,proportion=2,flag=wx.EXPAND|wx.ALL,border=0)
@@ -38,10 +39,13 @@ class chatgui(object):
 		self.mythr=mythread(self.protocol,self.userlist)
 		self.mythr.setDaemon(1)
 		self.mythr.start()
+	def testclose(self,evt):
+		self.app.Exit()
 	def OnSelect(self,evt):
 		index=evt.GetSelection()
 		value=self.userlist.GetString(index)
 		self.touser.SetLabel('To %s:'%value)
+	
 	def chatshow(self):
 		self.frame.Show()
 	def sendmessage(self,evt):
@@ -62,22 +66,6 @@ class mythread(threading.Thread):
 			time.sleep(2)
 	def setstatus(self,s):
 		self.status=s
-#class myprotocol(LineReceiver):
-#	def __init__(self,gui):
-#		self.gui=gui
-#		self.content=self.gui.chatcontent
-#	def connectionLost(self,reason):
-#		print 'lost!!:'+reason.getErrorMessage()
-#		self.gui.mythr.setstatus(False)
-#		reactor.stop()
-#	def lineReceived(self,line):
-#		self.content.AppendText(line)
-
-#class myfactory(protocol.ClientFactory):
-#	def __init__(self,gui):
-#		self.gui=gui
-#	def buildProtocol(self,addr):
-#		return myprotocol(self.gui)
 		
 if __name__=='__main__':
 	app=wx.App(False)

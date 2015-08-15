@@ -10,45 +10,51 @@ import time
 import wx
 from ConfigParser import ConfigParser
 import commands
-import myregister
+import registergui
 class myprotocol(LineReceiver):
 	def __init__(self):
 		self.gui=None
+		self.reg=None
 		self.status=None
 	def connectionLost(self,reason):
 		print 'connection lost:'+reason.getErrorMessage()
 	def lineReceived(self,line):
-		self.gui.setprotocol(self)
+		#self.gui.setprotocol(self)
+		#self.reg.setprotocol(self)
 		if self.status!='start chat':
-			if line.split(':')[0]=='login succeed':
+			if line.startswith('login succeed'):
 				self.chat=chatgui.chatgui(self.gui.app,self,line.split(':')[1])
 				self.chat.chatshow()
 				self.gui.logindestroy()
 				self.status='start chat'
+			elif line.startswith('Register succeed'):
+				self.chat=chatgui.chatgui(self.reg.app,self,line.split(':')[1])
+				self.chat.chatshow()
+				self.reg.registerdestroy()
+				self.status='start chat'
 			else:
-				self.gui.status.SetLabel(line)
+				if line.startswith('Register Error:'):
+					self.reg.status.SetLabel(line)
+				else:
+					self.gui.status.SetLabel(line)
 		else:
 			if not line.startswith('UserList:'):
 				self.chat.chatcontent.AppendText(line+'\n')
 			else:
 				line=line[len('UserList:'):]
 				users=line.split(':')
-				#print users
-				#self.chat.userlist.Clear()
-				#self.chat.userlist.Append('All Users')
 				
 				for u in users:
 					self.chat.userlist.Append(u)	
 	def connectionMade(self):
 		self.gui=self.factory.gui
-		self.reg=self.factory.reg
+		self.reg=self.gui.register
+		self.gui.setprotocol(self)
+		self.reg.setprotocol(self)
 class myfactory(protocol.ClientFactory):
-	def __init__(self,gui,reg):
+	def __init__(self,gui):
 		self.gui=gui
-		self.reg=reg
 		self.protocol=myprotocol
-#	def buildProtocol(self,addr):
-#		return myprotocol()
 	def clientConnectionFailed(self,transport,reason):
 		reactor.stop()
 	def clientConnectionLost(self,transport,reason):
@@ -64,8 +70,7 @@ if __name__=='__main__':
 	app=wx.App(False)
 	
 	mygui=mylogingui.mylogingui(app)
-	myreg=myregister.myregister(app)
-	myfac=myfactory(mygui,myreg)
+	myfac=myfactory(mygui)
 	
 	reactor.registerWxApp(app)
 	
