@@ -66,11 +66,19 @@ class myprotocol(LineReceiver):
 						ld=l
 						break
 				ul=':'.join(ls)
-				ld.sendLine('UserList:%s'%ul)
+				ld.sendLine('AddUserList:%s'%ul)
+			else:
+				ls=list(clientusers-serverusers)
+				if ls!=[]:
+					for n,l in self.users.items():
+						if n==self.name:
+							ld=l
+							break
+					ul=':'.join(ls)
+					ld.sendLine('RemoveUserList:%s'%ul)
 		
 		else:
 			for n,l in self.users.items():
-				print n,self.name,name
 				if n==self.name:
 					l.sendLine(content)
 				if n==name:

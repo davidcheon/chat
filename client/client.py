@@ -38,14 +38,19 @@ class myprotocol(LineReceiver):
 				else:
 					self.gui.status.SetLabel(line)
 		else:
-			if not line.startswith('UserList:'):
-				self.chat.chatcontent.AppendText(line+'\n')
-			else:
-				line=line[len('UserList:'):]
+			if line.startswith('RemoveUserList:'):
+				users=self.chat.userlist.GetStrings()
+				line=line[len('RemoveUserList:'):]
+				serverusers=line.split(':')				
+				for u in serverusers:
+					self.chat.userlist.Delete(self.chat.userlist.FindString(u))
+			elif line.startswith('AddUserList:'):
+				line=line[len('AddUserList:'):]
 				users=line.split(':')
-				
 				for u in users:
 					self.chat.userlist.Append(u)	
+			else:
+				self.chat.chatcontent.AppendText(line+'\n')
 	def connectionMade(self):
 		self.gui=self.factory.gui
 		self.reg=self.gui.register

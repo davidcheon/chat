@@ -23,7 +23,7 @@ class chatgui(object):
 		self.userlist.SetSelection(0)
 		self.userlist.Bind(wx.EVT_LISTBOX, self.OnSelect)
 		self.sendbutton=wx.Button(self.bkg,label='send')
-		self.sendbutton.Bind(wx.EVT_BUTTON,self.testclose)
+		self.sendbutton.Bind(wx.EVT_BUTTON,self.sendmessage)
 		self.touser=wx.StaticText(self.bkg,label='To All Users:')
 		self.hbox1=wx.BoxSizer()
 		self.hbox1.Add(self.inputcontent,proportion=2,flag=wx.EXPAND|wx.ALL,border=0)
@@ -52,7 +52,10 @@ class chatgui(object):
 		content=str(self.inputcontent.GetValue())
 		to=str(self.touser.GetLabel())	
 		to=to[to.find(' ')+1:len(to)-1]
-		self.protocol.sendLine("{0}:{1}".format(to,content))
+		if self.name!=to:
+			self.protocol.sendLine("{0}:{1}".format(to,content))
+		else:
+			wx.MessageBox('can not chat with yourself','Message',style=wx.OK)
 class mythread(threading.Thread):
 	def __init__(self,proc,userlist):
 		threading.Thread.__init__(self)
